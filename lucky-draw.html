@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wedding Lucky Draw</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=Inter:wght@300;400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --green: #7ba889;
+    --green-light: #a8ccb2;
+    --green-dark: #5a8a6a;
+    --green-deep: #3d6b4f;
+    --pink: #e4a0b7;
+    --pink-light: #f2ced9;
+    --pink-dark: #d47a96;
+    --pink-fairy: #f0b8ca;
+    --cream: #fdf9f5;
+    --cream-warm: #f8f1e8;
+    --text: #3e5c4a;
+    --text-light: #6b8f78;
+  }
+
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at 20% 80%, rgba(184,220,192,0.4) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(240,184,202,0.35) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(248,241,232,0.6) 0%, transparent 70%),
+      linear-gradient(160deg, #eef5e9 0%, #fdf9f5 30%, #fdf2f5 60%, #f0f7f1 100%);
+    font-family: 'Cormorant Garamond', serif;
+    color: var(--text);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+  }
+
+  canvas#confetti {
+    position: fixed; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 1000;
+  }
+
+  /* ---- Floating petals & bubbles ---- */
+  .bg-particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+  .bg-particles .petal {
+    position: absolute; width: 8px; height: 8px;
+    border-radius: 50% 0 50% 0; opacity: 0;
+    animation: floatPetal linear infinite;
+  }
+  .bg-particles .petal.pink { background: var(--pink-light); }
+  .bg-particles .petal.green { background: var(--green-light); }
+
+  .bg-particles .bubble {
+    position: absolute; border-radius: 50%; opacity: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.8), rgba(240,184,202,0.2));
+    border: 1px solid rgba(240,184,202,0.25);
+    animation: floatBubble linear infinite;
+  }
+
+  @keyframes floatPetal {
+    0%   { opacity: 0; transform: translateY(105vh) rotate(0deg) scale(0.3); }
+    8%   { opacity: 0.5; }
+    85%  { opacity: 0.5; }
+    100% { opacity: 0; transform: translateY(-5vh) rotate(360deg) scale(1); }
+  }
+  @keyframes floatBubble {
+    0%   { opacity: 0; transform: translateY(105vh) scale(0.5); }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.4; }
+    100% { opacity: 0; transform: translateY(-5vh) scale(1.2); }
+  }
+
+  /* ---- Vine decorations ---- */
+  .vine {
+    position: fixed; pointer-events: none; z-index: 0; opacity: 0.12;
+  }
+  .vine-left {
+    left: -20px; top: 0; height: 100vh; width: 180px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 800'%3E%3Cpath d='M60 0 C80 100 20 150 50 250 C80 350 10 400 40 500 C70 600 20 650 50 750 C60 780 55 800 55 800' fill='none' stroke='%237ba889' stroke-width='2'/%3E%3Ccircle cx='50' cy='120' r='12' fill='%237ba889' opacity='0.3'/%3E%3Ccircle cx='30' cy='280' r='8' fill='%23e4a0b7' opacity='0.3'/%3E%3Ccircle cx='60' cy='450' r='10' fill='%237ba889' opacity='0.25'/%3E%3Ccircle cx='35' cy='620' r='14' fill='%23e4a0b7' opacity='0.2'/%3E%3Cpath d='M50 120 C30 110 25 90 40 85' fill='none' stroke='%237ba889' stroke-width='1.5'/%3E%3Cpath d='M50 120 C70 108 80 90 65 82' fill='none' stroke='%237ba889' stroke-width='1.5'/%3E%3Cpath d='M40 500 C20 490 15 470 30 465' fill='none' stroke='%237ba889' stroke-width='1.5'/%3E%3Cpath d='M40 500 C60 488 70 470 55 462' fill='none' stroke='%237ba889' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat;
+    background-size: contain;
+  }
+  .vine-right {
+    right: -20px; top: 0; height: 100vh; width: 180px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 800'%3E%3Cpath d='M120 0 C100 120 150 180 130 280 C100 380 160 420 140 520 C110 620 160 680 130 760 C120 790 125 800 125 800' fill='none' stroke='%237ba889' stroke-width='2'/%3E%3Ccircle cx='130' cy='150' r='10' fill='%23e4a0b7' opacity='0.3'/%3E%3Ccircle cx='150' cy='350' r='12' fill='%237ba889' opacity='0.25'/%3E%3Ccircle cx='125' cy='550' r='8' fill='%23e4a0b7' opacity='0.3'/%3E%3Ccircle cx='145' cy='700' r='11' fill='%237ba889' opacity='0.2'/%3E%3Cpath d='M130 280 C110 268 105 250 118 244' fill='none' stroke='%237ba889' stroke-width='1.5'/%3E%3Cpath d='M130 280 C150 268 158 250 142 242' fill='none' stroke='%237ba889' stroke-width='1.5'/%3E%3Cpath d='M140 520 C120 508 115 490 128 484' fill='none' stroke='%237ba889' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat;
+    background-size: contain;
+  }
+
+  .container {
+    position: relative; z-index: 1; text-align: center;
+    width: 100%; max-width: 1400px; padding: 2rem;
+  }
+
+  .screen { display: none; flex-direction: column; align-items: center; gap: 2rem; }
+  .screen.active { display: flex; animation: fadeIn 0.8s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .ornament {
+    font-size: 2.5rem; letter-spacing: 0.8rem; opacity: 0.5;
+    background: linear-gradient(90deg, var(--green), var(--pink), var(--green));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 6rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--green-dark), var(--green), var(--pink), var(--pink-dark));
+    background-size: 200% 200%;
+    animation: gradientShift 6s ease infinite;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; line-height: 1.2;
+  }
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+
+  .subtitle {
+    font-size: 2rem; color: var(--text-light); opacity: 0.8;
+    font-weight: 300; letter-spacing: 0.3em; text-transform: uppercase;
+  }
+
+  .btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem; font-weight: 600;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 1.2rem 4rem;
+    border: 3px solid var(--green);
+    background: transparent; color: var(--green-dark);
+    cursor: pointer; transition: all 0.4s ease; margin-top: 0.5rem;
+    border-radius: 50px;
+  }
+  .btn:hover {
+    background: linear-gradient(135deg, var(--green), var(--green-light));
+    color: white; border-color: var(--green);
+    box-shadow: 0 8px 30px rgba(123,168,137,0.3);
+    transform: translateY(-2px);
+  }
+
+  .round-label {
+    font-size: 1.5rem; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--green); opacity: 0.7;
+  }
+  .round-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem; color: var(--green-dark);
+  }
+
+  /* ---- Formula with input slots ---- */
+  .formula-box {
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(123,168,137,0.2);
+    border-radius: 32px; padding: 3rem 3rem;
+    backdrop-filter: blur(20px);
+    position: relative; overflow: hidden;
+    box-shadow:
+      0 8px 32px rgba(123,168,137,0.08),
+      0 2px 8px rgba(228,160,183,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.8);
+  }
+  .formula-box::before {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(123,168,137,0.04), rgba(228,160,183,0.04), transparent);
+    pointer-events: none;
+  }
+
+  .formula-row {
+    font-family: 'Inter', sans-serif; font-size: 4.5rem; font-weight: 300;
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.6rem; flex-wrap: wrap;
+  }
+
+  .formula-row .op {
+    color: var(--text-light); font-weight: 300; opacity: 0.5;
+    min-width: 3rem; text-align: center;
+  }
+  .formula-row .paren {
+    color: var(--green); font-weight: 300; font-size: 5.5rem; opacity: 0.4;
+  }
+  .formula-row .eq-sign {
+    color: var(--pink-dark); font-weight: 400; margin: 0 0.5rem; opacity: 0.6;
+  }
+
+  .var-slot {
+    position: relative; display: inline-flex; flex-direction: column;
+    align-items: center; gap: 0.3rem; cursor: pointer;
+  }
+  .var-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--green); opacity: 0.5; font-weight: 600;
+  }
+  .var-input {
+    font-family: 'Inter', sans-serif; font-size: 4.5rem; font-weight: 600;
+    min-width: 140px; min-height: 110px;
+    background: rgba(255,255,255,0.6);
+    border: 3px solid rgba(123,168,137,0.2);
+    border-radius: 18px; color: var(--text);
+    display: flex; align-items: center; justify-content: center;
+    padding: 0.2rem 0.8rem; transition: all 0.3s ease;
+    letter-spacing: 0.03em;
+  }
+  .var-slot.active .var-input {
+    border-color: var(--green);
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 0 0 6px rgba(123,168,137,0.12), 0 6px 30px rgba(123,168,137,0.1);
+  }
+  .var-slot.active .var-label { opacity: 1; }
+  .var-slot.filled .var-input { color: var(--green-deep); }
+
+  .var-input.empty::after {
+    content: ''; width: 3px; height: 55px;
+    background: var(--green); animation: blink 1s step-end infinite;
+    border-radius: 2px;
+  }
+  .var-slot:not(.active) .var-input.empty::after { display: none; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .var-input.pop { animation: slotPop 0.12s ease; }
+  @keyframes slotPop {
+    0%   { transform: scale(1); }
+    50%  { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  .var-slot.mirror { cursor: default; }
+  .var-slot.mirror .var-label { opacity: 0.35; }
+  .var-slot.mirror .mirror-input {
+    font-weight: 600;
+    background: rgba(123,168,137,0.04);
+    border: 3px dashed rgba(123,168,137,0.18);
+    color: var(--green);
+    opacity: 0.55;
+  }
+  .var-slot.mirror.filled .mirror-input {
+    color: var(--green-deep);
+    border-color: rgba(123,168,137,0.3);
+    opacity: 0.7;
+  }
+
+  .result-slot {
+    font-family: 'Inter', sans-serif; font-size: 5rem; font-weight: 700;
+    min-width: 160px; min-height: 110px;
+    background: rgba(228,160,183,0.08);
+    border: 3px dashed rgba(228,160,183,0.35);
+    border-radius: 18px; color: rgba(228,160,183,0.4);
+    display: flex; align-items: center; justify-content: center;
+    padding: 0.2rem 1rem; transition: all 0.5s ease;
+  }
+  .result-slot.revealed {
+    border-style: solid;
+    border-color: var(--pink);
+    color: var(--pink-dark);
+    background: rgba(228,160,183,0.12);
+    box-shadow: 0 0 40px rgba(228,160,183,0.2);
+    animation: resultReveal 0.8s ease;
+  }
+  @keyframes resultReveal {
+    0%   { transform: scale(0.5) rotateY(180deg); opacity: 0; }
+    60%  { transform: scale(1.08) rotateY(0); opacity: 1; }
+    100% { transform: scale(1); }
+  }
+
+  .hint {
+    font-size: 1.15rem; color: var(--text-light); opacity: 0.45;
+    letter-spacing: 0.06em; font-family: 'Inter', sans-serif; font-weight: 300;
+    line-height: 2;
+  }
+  .hint kbd {
+    display: inline-block;
+    border: 1px solid rgba(123,168,137,0.25);
+    background: rgba(255,255,255,0.5);
+    border-radius: 5px; padding: 0.15em 0.6em; font-size: 1.05rem;
+    margin: 0 0.15em; font-family: 'Inter', sans-serif;
+    color: var(--green-dark);
+  }
+
+  /* ---- Result Screen ---- */
+  .winner-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 14rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--green), var(--green-dark), var(--pink-dark), var(--pink));
+    background-size: 200% 200%;
+    animation: winnerReveal 1s ease, gradientShift 4s ease infinite;
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; line-height: 1;
+    filter: drop-shadow(0 4px 30px rgba(123,168,137,0.25));
+  }
+  @keyframes winnerReveal {
+    0%   { opacity: 0; transform: scale(0.3) rotateY(180deg); }
+    60%  { opacity: 1; transform: scale(1.1) rotateY(0); }
+    100% { transform: scale(1); }
+  }
+
+  .winner-label {
+    font-size: 2.5rem; color: var(--text-light); letter-spacing: 0.25em; opacity: 0.7;
+  }
+  .result-round {
+    font-size: 1.5rem; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--green); opacity: 0.6;
+  }
+
+  .glow-ring {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    animation: glowPulse 3s ease-in-out infinite;
+  }
+  .glow-ring:nth-child(1) {
+    width: 380px; height: 380px;
+    border: 2px solid rgba(123,168,137,0.12);
+  }
+  .glow-ring:nth-child(2) {
+    width: 480px; height: 480px;
+    border: 2px solid rgba(228,160,183,0.1);
+    animation-delay: 0.7s;
+  }
+  .glow-ring:nth-child(3) {
+    width: 580px; height: 580px;
+    border: 2px solid rgba(123,168,137,0.08);
+    animation-delay: 1.4s;
+  }
+  @keyframes glowPulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50%      { opacity: 0.8; transform: scale(1.04); }
+  }
+
+  .result-center {
+    position: relative; display: flex; align-items: center;
+    justify-content: center; min-height: 360px;
+  }
+
+  .formula-recap {
+    font-family: 'Inter', sans-serif; font-size: 1.8rem;
+    color: var(--text-light); letter-spacing: 0.05em; font-weight: 300; opacity: 0.5;
+  }
+
+  /* ---- Countdown ---- */
+  .countdown-overlay {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(253,249,245,0.85);
+    backdrop-filter: blur(8px);
+    align-items: center; justify-content: center;
+  }
+  .countdown-overlay.active { display: flex; }
+  .countdown-num {
+    font-family: 'Playfair Display', serif; font-size: 18rem;
+    background: linear-gradient(135deg, var(--green), var(--pink-dark));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: countPop 0.8s ease;
+    filter: drop-shadow(0 4px 20px rgba(123,168,137,0.2));
+  }
+  @keyframes countPop {
+    0%   { opacity: 0; transform: scale(2); }
+    50%  { opacity: 1; transform: scale(0.9); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 900px) {
+    h1 { font-size: 3.5rem; }
+    .subtitle { font-size: 1.3rem; }
+    .formula-row { font-size: 3rem; gap: 0.3rem; }
+    .formula-row .paren { font-size: 3.5rem; }
+    .var-input { font-size: 3rem; min-width: 90px; min-height: 75px; }
+    .var-label { font-size: 1rem; }
+    .result-slot { font-size: 3.2rem; min-width: 100px; min-height: 75px; }
+    .formula-box { padding: 2rem 1.5rem; }
+    .winner-number { font-size: 8rem; }
+    .countdown-num { font-size: 12rem; }
+    .vine { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti"></canvas>
+
+<div class="bg-particles" id="bgParticles"></div>
+<div class="vine vine-left"></div>
+<div class="vine vine-right"></div>
+
+<div class="countdown-overlay" id="countdown">
+  <div class="countdown-num" id="countdownNum"></div>
+</div>
+
+<div class="container">
+
+  <!-- WELCOME -->
+  <div class="screen active" id="welcomeScreen">
+    <div class="ornament">&#10047; &#10047; &#10047;</div>
+    <h1>Lucky Draw</h1>
+    <div class="subtitle">A Garden of Fortune</div>
+    <p style="font-size:1.6rem; opacity:0.45; max-width:600px; line-height:1.7; margin-top:0.5rem; color:var(--text-light);">
+      Two sessions, two lucky winners.<br>
+      Pick the numbers, reveal the fate.
+    </p>
+    <button class="btn" id="btnStart">Begin Session 1</button>
+  </div>
+
+  <!-- GAME: SESSION 1 -->
+  <div class="screen" id="game1Screen">
+    <div class="round-label">Lucky Draw &middot; Session 1</div>
+    <div class="round-title">Pick Your Numbers</div>
+    <div class="formula-box">
+      <div class="formula-row">
+        <div class="var-slot active" data-idx="0">
+          <div class="var-label">X</div>
+          <div class="var-input empty" id="slot1-0"></div>
+        </div>
+        <span class="op">+</span>
+        <div class="var-slot" data-idx="1">
+          <div class="var-label">Y</div>
+          <div class="var-input empty" id="slot1-1"></div>
+        </div>
+        <span class="op">&minus;</span>
+        <div class="var-slot" data-idx="2">
+          <div class="var-label">C</div>
+          <div class="var-input empty" id="slot1-2"></div>
+        </div>
+        <span class="eq-sign">=</span>
+        <div class="result-slot" id="result1">?</div>
+      </div>
+    </div>
+    <div class="hint">
+      <kbd>0</kbd>&ndash;<kbd>9</kbd> to type &nbsp;&bull;&nbsp;
+      <kbd>Backspace</kbd> to delete &nbsp;&bull;&nbsp;
+      <kbd>Tab</kbd> next slot &nbsp;&bull;&nbsp;
+      <kbd>Enter</kbd> to reveal
+    </div>
+  </div>
+
+  <!-- GAME: SESSION 2 -->
+  <div class="screen" id="game2Screen">
+    <div class="round-label">Lucky Draw &middot; Session 2</div>
+    <div class="round-title">Pick Your Numbers</div>
+    <div class="formula-box">
+      <div class="formula-row">
+        <span class="paren">(</span>
+        <div class="var-slot active" data-idx="0">
+          <div class="var-label">A</div>
+          <div class="var-input empty" id="slot2-0"></div>
+        </div>
+        <span class="op">&divide;</span>
+        <div class="var-slot" data-idx="1">
+          <div class="var-label">B</div>
+          <div class="var-input empty" id="slot2-1"></div>
+        </div>
+        <span class="paren">)</span>
+        <span class="op">&minus;</span>
+        <div class="var-slot mirror" id="mirror-b-slot">
+          <div class="var-label">B</div>
+          <div class="var-input mirror-input" id="mirror-b">B</div>
+        </div>
+        <span class="op">+</span>
+        <div class="var-slot" data-idx="2">
+          <div class="var-label">C</div>
+          <div class="var-input empty" id="slot2-2"></div>
+        </div>
+        <span class="eq-sign">=</span>
+        <div class="result-slot" id="result2">?</div>
+      </div>
+    </div>
+    <div class="hint">
+      <kbd>0</kbd>&ndash;<kbd>9</kbd> to type &nbsp;&bull;&nbsp;
+      <kbd>Backspace</kbd> to delete &nbsp;&bull;&nbsp;
+      <kbd>Tab</kbd> next slot &nbsp;&bull;&nbsp;
+      <kbd>Enter</kbd> to reveal<br>
+      <span style="opacity:0.7; font-size:0.8rem;">B is used twice &mdash; type it once, it mirrors automatically</span>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="resultScreen">
+    <div class="result-round" id="resultRound">Session 1 &middot; Winner</div>
+    <div class="formula-recap" id="formulaRecap"></div>
+    <div class="winner-label">Guest Number</div>
+    <div class="result-center">
+      <div class="glow-ring"></div>
+      <div class="glow-ring"></div>
+      <div class="glow-ring"></div>
+      <div class="winner-number" id="winnerNumber"></div>
+    </div>
+    <div class="ornament">&#10047;</div>
+    <button class="btn" id="btnNext">Begin Session 2</button>
+  </div>
+
+  <!-- FINAL -->
+  <div class="screen" id="finalScreen">
+    <div class="ornament">&#10047; &#10047; &#10047;</div>
+    <h1 style="font-size:5rem;">Congratulations!</h1>
+    <div class="subtitle" style="font-size:1.6rem;">Both Lucky Winners</div>
+    <div style="display:flex; gap:5rem; margin-top:1.5rem; flex-wrap:wrap; justify-content:center;">
+      <div>
+        <div class="result-round">Session 1</div>
+        <div class="winner-number" id="final1" style="font-size:8rem;"></div>
+      </div>
+      <div>
+        <div class="result-round">Session 2</div>
+        <div class="winner-number" id="final2" style="font-size:8rem;"></div>
+      </div>
+    </div>
+    <button class="btn" id="btnRestart">Start Over</button>
+  </div>
+
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+
+  /* ---- Floating petals & fairy bubbles ---- */
+  const pc = $('bgParticles');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('span');
+    p.className = 'petal ' + (Math.random() > 0.5 ? 'pink' : 'green');
+    p.style.left = Math.random() * 100 + '%';
+    p.style.animationDuration = (10 + Math.random() * 14) + 's';
+    p.style.animationDelay = Math.random() * 12 + 's';
+    const size = 5 + Math.random() * 10;
+    p.style.width = size + 'px';
+    p.style.height = size + 'px';
+    pc.appendChild(p);
+  }
+  for (let i = 0; i < 12; i++) {
+    const b = document.createElement('span');
+    b.className = 'bubble';
+    b.style.left = Math.random() * 100 + '%';
+    b.style.animationDuration = (12 + Math.random() * 16) + 's';
+    b.style.animationDelay = Math.random() * 10 + 's';
+    const size = 8 + Math.random() * 20;
+    b.style.width = size + 'px';
+    b.style.height = size + 'px';
+    pc.appendChild(b);
+  }
+
+  /* ---- Confetti (garden palette) ---- */
+  const cc = $('confetti');
+  const ctx = cc.getContext('2d');
+  let pieces = [], cActive = false;
+  function resizeCanvas() { cc.width = innerWidth; cc.height = innerHeight; }
+  addEventListener('resize', resizeCanvas); resizeCanvas();
+
+  function launchConfetti() {
+    pieces = [];
+    const cols = ['#7ba889','#a8ccb2','#5a8a6a','#e4a0b7','#f2ced9','#d47a96','#f0b8ca','#fff'];
+    for (let i = 0; i < 200; i++) {
+      pieces.push({
+        x: Math.random() * cc.width, y: -20 - Math.random() * 400,
+        w: 4 + Math.random() * 8, h: 6 + Math.random() * 10,
+        color: cols[Math.floor(Math.random() * cols.length)],
+        vx: (Math.random() - 0.5) * 5, vy: 2 + Math.random() * 4,
+        rot: Math.random() * 360, rv: (Math.random() - 0.5) * 8, opacity: 1,
+      });
+    }
+    cActive = true; drawConfetti();
+  }
+  function drawConfetti() {
+    if (!cActive) return;
+    ctx.clearRect(0, 0, cc.width, cc.height);
+    let alive = 0;
+    for (const p of pieces) {
+      p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rot += p.rv;
+      if (p.y > cc.height + 20) p.opacity -= 0.02;
+      if (p.opacity <= 0) continue;
+      alive++;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.globalAlpha = Math.max(0, p.opacity);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    if (alive > 0) requestAnimationFrame(drawConfetti);
+    else { cActive = false; ctx.clearRect(0, 0, cc.width, cc.height); }
+  }
+
+  /* ---- State ---- */
+  let currentSession = 0;
+  let activeSlot = 0;
+  let slotValues = ['', '', ''];
+  let acceptingInput = false;
+  let resultRevealed = false;
+  const winners = [null, null];
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    $(id).classList.add('active');
+  }
+
+  function getSlotEl(idx) { return $(`slot${currentSession}-${idx}`); }
+
+  function getAllSlots() {
+    const screen = currentSession === 1 ? $('game1Screen') : $('game2Screen');
+    return screen.querySelectorAll('.var-slot');
+  }
+
+  function setActiveSlot(idx) {
+    activeSlot = idx;
+    getAllSlots().forEach((slot, i) => slot.classList.toggle('active', i === idx));
+    updateSlotDisplay(idx);
+  }
+
+  function updateSlotDisplay(idx) {
+    const el = getSlotEl(idx);
+    const val = slotValues[idx];
+    el.textContent = val;
+    el.classList.toggle('empty', val === '');
+    el.parentElement.classList.toggle('filled', val !== '');
+    el.classList.remove('pop'); void el.offsetWidth;
+    if (val) el.classList.add('pop');
+
+    if (currentSession === 2 && idx === 1) {
+      $('mirror-b').textContent = val || 'B';
+      $('mirror-b-slot').classList.toggle('filled', val !== '');
+    }
+  }
+
+  function clampResult(raw) {
+    const n = Math.round(raw);
+    return ((((n - 1) % 100) + 100) % 100) + 1;
+  }
+
+  function computeResult() {
+    const v = slotValues.map(Number);
+    if (currentSession === 1) return v[0] + v[1] - v[2];
+    if (v[1] === 0) return NaN;
+    return (v[0] / v[1]) - v[1] + v[2];
+  }
+
+  function allFilled() { return slotValues.every(v => v !== ''); }
+
+  function buildRecap(session) {
+    const v = slotValues.map(Number);
+    if (session === 1) return `${v[0]} + ${v[1]} \u2212 ${v[2]}`;
+    return `(${v[0]} \u00F7 ${v[1]}) \u2212 ${v[1]} + ${v[2]}`;
+  }
+
+  function revealResult(session, finalNum, cb) {
+    const el = $(`result${session}`);
+    resultRevealed = true;
+    let ticks = 0, total = 20;
+    const iv = setInterval(() => {
+      ticks++;
+      if (ticks < total) {
+        el.textContent = Math.floor(Math.random() * 100) + 1;
+        el.style.color = 'var(--pink-dark)';
+      } else {
+        clearInterval(iv);
+        el.textContent = finalNum;
+        el.classList.add('revealed');
+        if (cb) cb();
+      }
+    }, 60);
+  }
+
+  function countdown(cb) {
+    const overlay = $('countdown');
+    const numEl = $('countdownNum');
+    overlay.classList.add('active');
+    let count = 3;
+    numEl.textContent = count;
+    numEl.style.animation = 'none'; void numEl.offsetWidth; numEl.style.animation = '';
+    const iv = setInterval(() => {
+      count--;
+      if (count > 0) {
+        numEl.textContent = count;
+        numEl.style.animation = 'none'; void numEl.offsetWidth; numEl.style.animation = '';
+      } else {
+        clearInterval(iv); overlay.classList.remove('active'); cb();
+      }
+    }, 900);
+  }
+
+  function startSession(session) {
+    currentSession = session;
+    activeSlot = 0;
+    slotValues = ['', '', ''];
+    resultRevealed = false;
+
+    const resultEl = $(`result${session}`);
+    resultEl.textContent = '?';
+    resultEl.classList.remove('revealed');
+    resultEl.style.color = '';
+
+    const screenId = session === 1 ? 'game1Screen' : 'game2Screen';
+    const screen = $(screenId);
+    screen.querySelectorAll('.var-slot').forEach(slot => {
+      slot.classList.remove('active', 'filled');
+      const inp = slot.querySelector('.var-input');
+      inp.textContent = '';
+      inp.classList.add('empty');
+    });
+
+    if (session === 2) {
+      $('mirror-b').textContent = 'B';
+      $('mirror-b-slot').classList.remove('filled');
+    }
+
+    showScreen(screenId);
+    setTimeout(() => { setActiveSlot(0); acceptingInput = true; }, 600);
+  }
+
+  function submitSession() {
+    if (!acceptingInput || !allFilled() || resultRevealed) return;
+    acceptingInput = false;
+
+    const raw = computeResult();
+    if (isNaN(raw)) { acceptingInput = true; return; }
+
+    const winner = clampResult(raw);
+    winners[currentSession - 1] = winner;
+
+    revealResult(currentSession, winner, () => {
+      setTimeout(() => {
+        $('resultRound').textContent = `Session ${currentSession} \u00B7 Winner`;
+        $('formulaRecap').textContent = buildRecap(currentSession) + ` = ${winner}`;
+        $('winnerNumber').textContent = winner;
+        $('winnerNumber').style.animation = 'none';
+        void $('winnerNumber').offsetWidth;
+        $('winnerNumber').style.animation = '';
+        $('btnNext').textContent = currentSession < 2 ? 'Begin Session 2' : 'See All Winners';
+        showScreen('resultScreen');
+        launchConfetti();
+      }, 800);
+    });
+  }
+
+  /* ---- Keyboard ---- */
+  const MAX_DIGITS = 2;
+  const TOTAL_SLOTS = 3;
+
+  document.addEventListener('keydown', e => {
+    if (!acceptingInput) return;
+    if (e.key >= '0' && e.key <= '9') {
+      e.preventDefault();
+      if (slotValues[activeSlot].length >= MAX_DIGITS) return;
+      slotValues[activeSlot] += e.key;
+      updateSlotDisplay(activeSlot);
+      if (slotValues[activeSlot].length === MAX_DIGITS && activeSlot < TOTAL_SLOTS - 1) {
+        setActiveSlot(activeSlot + 1);
+      }
+    } else if (e.key === 'Backspace' || e.key === 'Delete') {
+      e.preventDefault();
+      if (slotValues[activeSlot].length > 0) {
+        slotValues[activeSlot] = slotValues[activeSlot].slice(0, -1);
+        updateSlotDisplay(activeSlot);
+      }
+    } else if (e.key === 'Tab' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (activeSlot < TOTAL_SLOTS - 1) setActiveSlot(activeSlot + 1);
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (activeSlot > 0) setActiveSlot(activeSlot - 1);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      submitSession();
+    }
+  });
+
+  document.addEventListener('click', e => {
+    const slot = e.target.closest('.var-slot');
+    if (!slot || !acceptingInput) return;
+    const idx = parseInt(slot.dataset.idx, 10);
+    if (!isNaN(idx)) setActiveSlot(idx);
+  });
+
+  /* ---- Buttons ---- */
+  $('btnStart').addEventListener('click', () => countdown(() => startSession(1)));
+
+  $('btnNext').addEventListener('click', () => {
+    if (currentSession < 2) {
+      countdown(() => startSession(2));
+    } else {
+      $('final1').textContent = winners[0] ?? '\u2014';
+      $('final2').textContent = winners[1] ?? '\u2014';
+      showScreen('finalScreen');
+      launchConfetti();
+    }
+  });
+
+  $('btnRestart').addEventListener('click', () => {
+    winners[0] = null; winners[1] = null;
+    showScreen('welcomeScreen');
+  });
+})();
+</script>
+</body>
+</html>
